@@ -25,11 +25,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    # Используем gradlew с правильной версией
+    # Используем системный gradle вместо gradlew
     - name: Build with Gradle
       run: |
-        chmod +x ./gradlew
-        ./gradlew :app:assembleDebug
+        gradle --version
+        gradle :app:assembleDebug
 
     - name: Check APK exists
       run: |
