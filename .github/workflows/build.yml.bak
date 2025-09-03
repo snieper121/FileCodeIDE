@@ -1,6 +1,9 @@
-name: Build Code IDE
+name: Build File Explorer App
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
@@ -17,7 +20,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # --- НАЧАЛО НОВОГО ШАГА ---
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
@@ -27,7 +29,6 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-    # --- КОНЕЦ НОВОГО ШАГА ---
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
@@ -35,8 +36,22 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew :app:assembleDebug
 
+    - name: Check APK exists
+      run: |
+        if [ ! -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
+          echo "APK file not found!"
+          exit 1
+        fi
+        echo "APK file found successfully"
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Code/IDE.apk
+        name: FileExplorer-App.apk
         path: app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
+
+    - name: Build report
+      run: |
+        echo "Build completed successfully!"
+        echo "APK size: $(du -h app/build/outputs/apk/debug/app-debug.apk | cut -f1)"
